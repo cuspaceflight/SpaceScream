@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import com.strand.global.MessageCode;
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -28,6 +30,8 @@ public class PlayVideos extends Activity {
     
     private MediaRecorder mediaRecorder;
     private String filename;
+    private String path;
+    private boolean recording = false;
     
     private Handler handler;
     private Runnable runnable;
@@ -74,7 +78,7 @@ public class PlayVideos extends Activity {
 
             @Override
             public void onCompletion(MediaPlayer mp) {
-                stopRecording();
+                stopRecording(false);
                 handler.postDelayed(runnable, 5000);
             }
             
@@ -115,6 +119,9 @@ public class PlayVideos extends Activity {
         if (videoView.isPlaying()) {
             videoView.stopPlayback();
         }
+        if (recording) {
+            stopRecording(true);
+        }
         unregisterReceiver(broadcastReceiver);
     }
     
@@ -137,32 +144,50 @@ public class PlayVideos extends Activity {
     }
     
     private void startRecording(String filename) {
-        ScreamService.log("Starting audio recording of " + filename);
         
-        mediaRecorder = new MediaRecorder();
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mediaRecorder.setOutputFile("/sdcard/SpaceScream/" + filename + ".3gp");
-        
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-        
-        try {
-            mediaRecorder.prepare();
-            mediaRecorder.start();
-        } catch (IllegalStateException e) {
-            ScreamService.log("Record audio prepare() failed with IllegalStateException");
-        } catch (IOException e) {
-            ScreamService.log("Record audio prepare() failed with IOException");
+        path = "/sdcard/SpaceScream/" + filename + ".3gp";
+        if (!(new File(path)).exists()) {
+            
+            ScreamService.log("Starting audio recording of " + filename);
+            mediaRecorder = new MediaRecorder();
+            mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+            mediaRecorder.setOutputFile(path);
+            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+            
+            try {
+                mediaRecorder.prepare();
+                mediaRecorder.start();
+                recording  = true;
+            } catch (IllegalStateException e) {
+                ScreamService.log("Record audio prepare() failed with IllegalStateException");
+            } catch (IOException e) {
+                ScreamService.log("Record audio prepare() failed with IOException");
+            }
+            
+        } else {
+            ScreamService.log("Recording of video already exists: " + path);
         }
 
     }
     
-    private void stopRecording() {
-        ScreamService.log("Stopping audio recording");
+    private void stopRecording(boolean interrupted) {
+
+        if (recording) {
+            ScreamService.log("Stopping audio recording");
+            mediaRecorder.stop();
+            mediaRecorder.release();
+            mediaRecorder = null;
+            
+            if (interrupted) {
+                // Delete incomplete recording from SD card
+            } else {
+                Intent intent = new Intent(ScreamService.INTENT_FILE);
+                intent.putExtra(MessageCode.FILE_PATH, path);
+                sendBroadcast(intent);
+            }
+        }
         
-        mediaRecorder.stop();
-        mediaRecorder.release();
-        mediaRecorder = null;
     }
     
 }
