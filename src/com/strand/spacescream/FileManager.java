@@ -3,6 +3,10 @@ package com.strand.spacescream;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 
+import android.os.Environment;
+
+import com.strand.global.MessageCode;
+
 /**
  * 
  * A queue of file paths to be transferred, with state saved to SD card.
@@ -11,6 +15,7 @@ import java.util.NoSuchElementException;
  */
 public class FileManager {
 
+    public final static String DIRECTORY = Environment.getExternalStorageDirectory().toString() + MessageCode.WORKING_FOLDER + "SpaceScream";
     private static FileManager instance;
     
     private LinkedList<String> files;

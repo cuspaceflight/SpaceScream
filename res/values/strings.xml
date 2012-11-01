@@ -2,4 +2,5 @@
 <resources>
     <string name="hello">Hello World, SpaceScream!</string>
     <string name="app_name">Scream In Space</string>
+    <string name="image">image</string>
 </resources>

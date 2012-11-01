@@ -1,25 +1,23 @@
 package com.strand.spacescream;
 
-import java.io.File;
-import java.util.ArrayList;
-
-import com.strand.global.MessageCode;
-import com.strand.global.StrandLog;
-
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
+
+import com.strand.global.MessageCode;
+import com.strand.global.StrandLog;
 
 public class ScreamService extends Service {
 
     public final static String INTENT_STOP = "com.strand.spacescream.STOP";
     public final static String INTENT_FILE = "com.strand.spacescream.FILE";
+    public final static String INTENT_ENDING = "com.strand.spacescream.ENDING";
+    public final static String EXTRA_STAGE = "com.strand.spacescream.STAGE";
     
     private static ScreamService instance;
     
@@ -27,6 +25,9 @@ public class ScreamService extends Service {
     private Runnable runnable;
     
     private BroadcastReceiver broadcastReceiver;
+    
+    private int stage = 0;
+    private static int STAGES = 2;
     
     @Override
     public IBinder onBind(Intent arg0) {
@@ -53,16 +54,27 @@ public class ScreamService extends Service {
 
             @Override
             public void onReceive(Context context, Intent intent) {
+                
                 if (intent.getAction().equals(INTENT_FILE)) {
                     log("Received file broadcast");
                     FileManager.getInstance().add(intent.getStringExtra(MessageCode.FILE_PATH));
                 }
+                
+                if (intent.getAction().equals(INTENT_ENDING)) {
+                    log("Stage " + intent.getIntExtra(EXTRA_STAGE, 0) + " reports it is ending");
+                    stage = (intent.getIntExtra(EXTRA_STAGE, 0) + 1) % STAGES;
+                    
+                    handler.postDelayed(runnable, 5000);
+                    log("Scheduled next stage (" + stage + ") to run");
+                }
+                
             }
             
         };
         
         IntentFilter filter = new IntentFilter();
-        filter.addAction(ScreamService.INTENT_FILE);
+        filter.addAction(INTENT_FILE);
+        filter.addAction(INTENT_ENDING);
         registerReceiver(broadcastReceiver, filter);
         
         handler = new Handler();
@@ -71,13 +83,23 @@ public class ScreamService extends Service {
 
             @Override
             public void run() {
-                Intent play = new Intent(ScreamService.this, PlayVideos.class);
-                play.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                Intent intent = new Intent();
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra(EXTRA_STAGE, stage);
                 
-                play.putExtra("videos", getVideos());
+                switch (stage) {
+                case 0:
+                    log("Starting PlayVideos activity");
+                    intent.setClass(ScreamService.this, PlayVideos.class);
+                    break;
+                    
+                case 1:
+                    log("Starting DisplayImages activity");
+                    intent.setClass(ScreamService.this, DisplayImages.class);
+                    break;
+                }
                 
-                log("Starting PlayVideos activity");
-                startActivity(play);
+                startActivity(intent);
             }
             
         };
@@ -117,18 +139,5 @@ public class ScreamService extends Service {
     public static void log(String message) {
         StrandLog.d("SpaceScream", message);
     }
-
-    private ArrayList<String> getVideos() {
-        log("Finding videos on SD card");
-        
-        File directory = new File(Environment.getExternalStorageDirectory(), "SpaceScream/videos");
-        File[] files = directory.listFiles();
-        
-        ArrayList<String> videos = new ArrayList<String>();
-        for (File file : files) {
-            videos.add(file.getAbsolutePath());
-        }
-        
-        return videos;
-    }
+    
 }

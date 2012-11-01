@@ -4,24 +4,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import com.strand.global.MessageCode;
-
-import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaRecorder;
 import android.os.Bundle;
-import android.os.Handler;
 import android.widget.VideoView;
 
-public class PlayVideos extends Activity {
+public class PlayVideos extends ScreamActivity {
 
-    private ArrayList<CharSequence> videos;
+    private ArrayList<String> videos;
     private int index = 0;
     
     private VideoView videoView;
@@ -29,14 +21,10 @@ public class PlayVideos extends Activity {
     private OnCompletionListener completionListener;
     
     private MediaRecorder mediaRecorder;
-    private String filename;
-    private String path;
+    private String audioPath;
     private boolean recording = false;
     
-    private Handler handler;
     private Runnable runnable;
-    
-    private BroadcastReceiver broadcastReceiver;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -44,17 +32,6 @@ public class PlayVideos extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.playback);
         
-        broadcastReceiver = new BroadcastReceiver() {
-
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                ScreamService.log("Received stop broadcast from ScreamService");
-                finish();
-            }
-            
-        };
-        
-        handler = new Handler();
         runnable = new Runnable() {
 
             @Override
@@ -68,7 +45,7 @@ public class PlayVideos extends Activity {
 
             @Override
             public void onPrepared(MediaPlayer mp) {
-                startRecording(filename);
+                startRecording();
                 videoView.start();
             }
             
@@ -79,7 +56,7 @@ public class PlayVideos extends Activity {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 stopRecording(false);
-                handler.postDelayed(runnable, 5000);
+                postDelayed(runnable, 5000);
             }
             
         };
@@ -88,71 +65,53 @@ public class PlayVideos extends Activity {
         videoView.setZOrderMediaOverlay(true);
         videoView.setOnPreparedListener(preparedListener);
         videoView.setOnCompletionListener(completionListener);
-    }
-    
-    @Override
-    public void onStart() {
-        super.onStart();
         
-        Intent intent = getIntent();
-        videos = intent.getCharSequenceArrayListExtra("videos");
-        
-        // For testing
-        if (videos == null) {
-            videos = new ArrayList<CharSequence>();
-            videos.add("/sdcard/SpaceScream/videos/1331554436487.mp4");
-        }
-        
+        videos = getVideos();
     }
     
     @Override
     public void onResume() {
         super.onResume();
-        registerReceiver(broadcastReceiver, new IntentFilter(ScreamService.INTENT_STOP));
-        handler.postDelayed(runnable, 5000);
+        postDelayed(runnable, 5000);
     }
     
     @Override
     public void onPause() {
         super.onPause();
-        handler.removeCallbacks(runnable);
         if (videoView.isPlaying()) {
             videoView.stopPlayback();
         }
         if (recording) {
             stopRecording(true);
         }
-        unregisterReceiver(broadcastReceiver);
     }
     
     private void loadVideo() {
         if (!videos.isEmpty() && videos.size() > index) {
-            CharSequence path = videos.get(index++);
+            String path = videos.get(index++);
             if (path != null) {
-                File video = new File(path.toString());
-                ScreamService.log("Loading " + video.getAbsolutePath());
-                filename = video.getName();
-                videoView.setVideoPath(path.toString());
+                log("Loading " + path);
+                File video = new File(path);
+                audioPath = FileManager.DIRECTORY + "/audio/" + video.getName() + ".3gp";
+                videoView.setVideoPath(path);
             } else {
                 loadVideo();
             }
         } else {
-            ScreamService.log("No more videos left in queue; ending activity");
-            setResult(RESULT_OK);
+            log("No more videos left in queue; ending activity");            
             finish();
         }
     }
     
-    private void startRecording(String filename) {
+    private void startRecording() {
         
-        path = "/sdcard/SpaceScream/" + filename + ".3gp";
-        if (!(new File(path)).exists()) {
+        if (!(new File(audioPath)).exists()) {
             
-            ScreamService.log("Starting audio recording of " + filename);
+            log("Starting audio recording to " + audioPath);
             mediaRecorder = new MediaRecorder();
             mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
             mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-            mediaRecorder.setOutputFile(path);
+            mediaRecorder.setOutputFile(audioPath);
             mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
             
             try {
@@ -160,13 +119,13 @@ public class PlayVideos extends Activity {
                 mediaRecorder.start();
                 recording  = true;
             } catch (IllegalStateException e) {
-                ScreamService.log("Record audio prepare() failed with IllegalStateException");
+                log("Record audio prepare() failed with IllegalStateException");
             } catch (IOException e) {
-                ScreamService.log("Record audio prepare() failed with IOException");
+                log("Record audio prepare() failed with IOException");
             }
             
         } else {
-            ScreamService.log("Recording of video already exists: " + path);
+            log("Recording of video already exists: " + audioPath);
         }
 
     }
@@ -174,20 +133,42 @@ public class PlayVideos extends Activity {
     private void stopRecording(boolean interrupted) {
 
         if (recording) {
-            ScreamService.log("Stopping audio recording");
-            mediaRecorder.stop();
-            mediaRecorder.release();
-            mediaRecorder = null;
-            
-            if (interrupted) {
-                // Delete incomplete recording from SD card
-            } else {
-                Intent intent = new Intent(ScreamService.INTENT_FILE);
-                intent.putExtra(MessageCode.FILE_PATH, path);
-                sendBroadcast(intent);
+            recording = false;
+            log("Stopping audio recording");
+            if (mediaRecorder != null) {
+                try {
+                    mediaRecorder.stop();
+                    mediaRecorder.release();
+                    
+                    if (interrupted) {
+                        // Delete incomplete recording from SD card
+                        (new File(audioPath)).delete();
+                    } else {
+                        // Send broadcast message of new file to transfer
+                        transferFile(audioPath);
+                    }
+                    
+                } catch (IllegalStateException e) {
+                    log("IllegalStateException in stopRecording");
+                }
+                mediaRecorder = null;
             }
         }
         
+    }
+    
+    private ArrayList<String> getVideos() {
+        log("Finding videos on SD card");
+        
+        File directory = new File(FileManager.DIRECTORY, "videos");
+        File[] files = directory.listFiles();
+        
+        ArrayList<String> videos = new ArrayList<String>();
+        for (File file : files) {
+            videos.add(file.getAbsolutePath());
+        }
+        
+        return videos;
     }
     
 }
