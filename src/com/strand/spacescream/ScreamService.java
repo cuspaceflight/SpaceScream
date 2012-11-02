@@ -1,33 +1,28 @@
 package com.strand.spacescream;
 
+import android.app.Activity;
 import android.app.Service;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.os.Handler;
 import android.os.IBinder;
 
-import com.strand.global.MessageCode;
 import com.strand.global.StrandLog;
 
 public class ScreamService extends Service {
-
-    public final static String INTENT_STOP = "com.strand.spacescream.STOP";
-    public final static String INTENT_FILE = "com.strand.spacescream.FILE";
-    public final static String INTENT_ENDING = "com.strand.spacescream.ENDING";
-    public final static String EXTRA_STAGE = "com.strand.spacescream.STAGE";
+    
+    public final static String TAG = "SpaceScream";
     
     private static ScreamService instance;
     
+    private ScreamActivity screamActivity;
+    
     private Handler handler;
-    private Runnable runnable;
+    private Runnable runNext;
     
-    private BroadcastReceiver broadcastReceiver;
-    
-    private int stage = 0;
-    private static int STAGES = 2;
+    private int stage;
+    private boolean ending = false;
+    private boolean screenshot = false;
     
     @Override
     public IBinder onBind(Intent arg0) {
@@ -43,60 +38,38 @@ public class ScreamService extends Service {
         super.onCreate();
         
         instance = this;
-        log("Scream in Space has started!");
+        StrandLog.d(TAG, "Scream in Space has started!");
         
         // Set media volume to maximum
         AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 
                 audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0);
         
-        broadcastReceiver = new BroadcastReceiver() {
-
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                
-                if (intent.getAction().equals(INTENT_FILE)) {
-                    log("Received file broadcast");
-                    FileManager.getInstance().add(intent.getStringExtra(MessageCode.FILE_PATH));
-                }
-                
-                if (intent.getAction().equals(INTENT_ENDING)) {
-                    log("Stage " + intent.getIntExtra(EXTRA_STAGE, 0) + " reports it is ending");
-                    stage = (intent.getIntExtra(EXTRA_STAGE, 0) + 1) % STAGES;
-                    
-                    handler.postDelayed(runnable, 5000);
-                    log("Scheduled next stage (" + stage + ") to run");
-                }
-                
-            }
-            
-        };
-        
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(INTENT_FILE);
-        filter.addAction(INTENT_ENDING);
-        registerReceiver(broadcastReceiver, filter);
-        
         handler = new Handler();
         
-        runnable = new Runnable() {
+        runNext = new Runnable() {
 
             @Override
             public void run() {
                 Intent intent = new Intent();
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.putExtra(EXTRA_STAGE, stage);
                 
-                switch (stage) {
-                case 0:
-                    log("Starting PlayVideos activity");
+                switch (++stage) {
+                
+                case 1:
+                    StrandLog.d(TAG, "Starting PlayVideos activity");
                     intent.setClass(ScreamService.this, PlayVideos.class);
                     break;
                     
-                case 1:
-                    log("Starting DisplayImages activity");
+                case 2:
+                    StrandLog.d(TAG, "Starting DisplayImages activity");
                     intent.setClass(ScreamService.this, DisplayImages.class);
                     break;
+                    
+                default:
+                    stage = 1;
+                    handler.post(this);
+                    
                 }
                 
                 startActivity(intent);
@@ -104,7 +77,7 @@ public class ScreamService extends Service {
             
         };
         
-        handler.postDelayed(runnable, 5000); 
+        handler.postDelayed(runNext, 5000); 
     }
     
     /**
@@ -118,26 +91,63 @@ public class ScreamService extends Service {
     
     @Override
     public void onDestroy() {
-        log("Ending Scream in Space!");
-        handler.removeCallbacks(runnable);
-        sendStopBroadcast();
-        unregisterReceiver(broadcastReceiver);
+        StrandLog.d(TAG, "Ending Scream in Space!");
+        ending = true;
+        handler.removeCallbacks(runNext);
+        if (screamActivity != null && screamActivity.isRunning()) {
+            screamActivity.finish();
+        }
         instance = null;
         super.onDestroy();
-    }
-    
-    private void sendStopBroadcast() {
-        Intent intent = new Intent();
-        intent.setAction(INTENT_STOP);
-        sendBroadcast(intent);
     }
     
     public static ScreamService getInstance() {
         return instance;
     }
     
-    public static void log(String message) {
-        StrandLog.d("SpaceScream", message);
+    // Public methods a ScreamActivity might need to call:
+    
+    public void registerActivity(ScreamActivity activity) {
+        if (screamActivity != null) {
+            if (screamActivity.isRunning()) {
+                screamActivity.finish();
+            }
+        }
+        screamActivity = activity;
+    }
+    
+    public void unregisterActivity(ScreamActivity activity) {
+        String activityName = activity.getClass().getName();
+        String currentName = screamActivity.getClass().getName();
+        
+        if (currentName.equals(activityName)) {
+            screamActivity = null;
+        }
+    }
+    
+    public void activityEnding(Activity activity) {
+        StrandLog.d(TAG, activity.getClass().getName() + " reports it is ending");
+        if (!ending) {
+            StrandLog.d(TAG, "Scheduled next stage to run");
+            handler.postDelayed(runNext, 5000);
+        }
+    }
+    
+    public void requestScreenshot() {
+        screenshot = true;
+        StrandLog.d(TAG, "Screenshot requested");
+    }
+    
+    public boolean screenshotRequested() {
+        return screenshot;
+    }
+    
+    public void screenshotComplete() {
+        screenshot = false;
+        StrandLog.d(TAG, "Screenshot has been taken");
+        if (screamActivity.isRunning()) {
+            screamActivity.screenshotComplete();
+        }
     }
     
 }

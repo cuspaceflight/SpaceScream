@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import com.strand.global.StrandLog;
+
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
@@ -90,7 +92,7 @@ public class PlayVideos extends ScreamActivity {
         if (!videos.isEmpty() && videos.size() > index) {
             String path = videos.get(index++);
             if (path != null) {
-                log("Loading " + path);
+                StrandLog.d(ScreamService.TAG, "Loading " + path);
                 File video = new File(path);
                 audioPath = FileManager.DIRECTORY + "/audio/" + video.getName() + ".3gp";
                 videoView.setVideoPath(path);
@@ -98,7 +100,7 @@ public class PlayVideos extends ScreamActivity {
                 loadVideo();
             }
         } else {
-            log("No more videos left in queue; ending activity");            
+            StrandLog.d(ScreamService.TAG, "No more videos left in queue; ending activity");            
             finish();
         }
     }
@@ -107,7 +109,7 @@ public class PlayVideos extends ScreamActivity {
         
         if (!(new File(audioPath)).exists()) {
             
-            log("Starting audio recording to " + audioPath);
+            StrandLog.d(ScreamService.TAG, "Starting audio recording to " + audioPath);
             mediaRecorder = new MediaRecorder();
             mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
             mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
@@ -119,13 +121,13 @@ public class PlayVideos extends ScreamActivity {
                 mediaRecorder.start();
                 recording  = true;
             } catch (IllegalStateException e) {
-                log("Record audio prepare() failed with IllegalStateException");
+                StrandLog.e(ScreamService.TAG, "Record audio prepare() failed with IllegalStateException");
             } catch (IOException e) {
-                log("Record audio prepare() failed with IOException");
+                StrandLog.e(ScreamService.TAG, "Record audio prepare() failed with IOException");
             }
             
         } else {
-            log("Recording of video already exists: " + audioPath);
+            StrandLog.d(ScreamService.TAG, "Recording of video already exists: " + audioPath);
         }
 
     }
@@ -134,7 +136,7 @@ public class PlayVideos extends ScreamActivity {
 
         if (recording) {
             recording = false;
-            log("Stopping audio recording");
+            StrandLog.d(ScreamService.TAG, "Stopping audio recording");
             if (mediaRecorder != null) {
                 try {
                     mediaRecorder.stop();
@@ -144,12 +146,11 @@ public class PlayVideos extends ScreamActivity {
                         // Delete incomplete recording from SD card
                         (new File(audioPath)).delete();
                     } else {
-                        // Send broadcast message of new file to transfer
-                        transferFile(audioPath);
+                        FileManager.getInstance().add(audioPath);
                     }
                     
                 } catch (IllegalStateException e) {
-                    log("IllegalStateException in stopRecording");
+                    StrandLog.e(ScreamService.TAG, "IllegalStateException in stopRecording");
                 }
                 mediaRecorder = null;
             }
@@ -158,7 +159,7 @@ public class PlayVideos extends ScreamActivity {
     }
     
     private ArrayList<String> getVideos() {
-        log("Finding videos on SD card");
+        StrandLog.d(ScreamService.TAG, "Finding videos on SD card");
         
         File directory = new File(FileManager.DIRECTORY, "videos");
         File[] files = directory.listFiles();

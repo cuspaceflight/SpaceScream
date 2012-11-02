@@ -3,6 +3,8 @@ package com.strand.spacescream;
 import java.io.File;
 import java.util.ArrayList;
 
+import com.strand.global.StrandLog;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -35,6 +37,15 @@ public class DisplayImages extends ScreamActivity {
             
         };
         
+        registerScreenshotListener(new Runnable() {
+
+            @Override
+            public void run() {
+                postDelayed(runnable, 5000);
+            }
+            
+        });
+        
     }
     
     @Override
@@ -47,26 +58,21 @@ public class DisplayImages extends ScreamActivity {
         if (!images.isEmpty() && images.size() > index) {
             String path = images.get(index++);
             if (path != null) {
-                log("Loading " + path);
+                StrandLog.d(ScreamService.TAG, "Loading " + path);
                 Bitmap bitmap = BitmapFactory.decodeFile(path);
                 imageView.setImageBitmap(bitmap);
-                captureScreen();
-                postDelayed(runnable, 20000);
+                ScreamService.getInstance().requestScreenshot();
             } else {
                 loadImage();
             }
         } else {
-            log("No more images left in queue; ending activity");            
+            StrandLog.d(ScreamService.TAG, "No more images left in queue; ending activity");            
             finish();
         }
     }
     
-    private void captureScreen() {
-        // Not yet determined how to request a photo of phone screen.
-    }
-    
     private ArrayList<String> getImages() {
-        log("Finding images on SD card");
+        StrandLog.d(ScreamService.TAG, "Finding images on SD card");
         
         File directory = new File(FileManager.DIRECTORY, "images");
         File[] files = directory.listFiles();
