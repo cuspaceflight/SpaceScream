@@ -1,6 +1,7 @@
 package com.strand.spacescream;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import com.strand.global.StrandLog;
@@ -16,6 +17,7 @@ public class DisplayImages extends ScreamActivity {
     
     private ArrayList<String> images;
     private int index = 0;
+    private File record;
     
     private Runnable runnable;
     
@@ -41,6 +43,12 @@ public class DisplayImages extends ScreamActivity {
 
             @Override
             public void run() {
+                try {
+                    // Create a record file to indicate that a screenshot has successfully been taken
+                    record.createNewFile();
+                } catch (IOException e) {
+                    StrandLog.e(ScreamService.TAG, "IOException in createNewFile()");
+                }
                 postDelayed(runnable, 5000);
             }
             
@@ -61,7 +69,14 @@ public class DisplayImages extends ScreamActivity {
                 StrandLog.d(ScreamService.TAG, "Loading " + path);
                 Bitmap bitmap = BitmapFactory.decodeFile(path);
                 imageView.setImageBitmap(bitmap);
-                ScreamService.getInstance().requestScreenshot();
+                File image = new File(path);
+                record = new File(FileManager.DIRECTORY + "/screenshots/" + image.getName() + ".txt");
+                if (!record.exists()) {
+                    ScreamService.getInstance().requestScreenshot();
+                    StrandLog.d(ScreamService.TAG, "Requesting screenshot for " + image.getName());
+                } else {
+                    StrandLog.d(ScreamService.TAG, "Screenshot previously requested for " + image.getName());
+                }
             } else {
                 loadImage();
             }

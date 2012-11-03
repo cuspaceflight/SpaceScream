@@ -67,12 +67,13 @@ public class ScreamService extends Service {
                     break;
                     
                 default:
-                    stage = 1;
+                    stage = 0;
                     handler.post(this);
                     
                 }
-                
-                startActivity(intent);
+                if (intent.getComponent() != null) {
+                    startActivity(intent);
+                }
             }
             
         };

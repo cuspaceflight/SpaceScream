@@ -97,8 +97,9 @@ public class BService extends StrandBindingService{
 	    
 	}
 	
-	// Created in anticipation of the TAKE_SCR_PICT_RESP being handled by the StrandBindingService
-	protected void msgPICT_RESP(Message msg) {
+	@Override
+	protected void msgTAKE_SCR_PICT_RESP(Message msg) {
+	    StrandLog.d(ScreamService.TAG, "Screenshot acknowledged");
 	    ScreamService.getInstance().screenshotComplete();
 	}
 	

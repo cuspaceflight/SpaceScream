@@ -1,16 +1,23 @@
 package com.strand.spacescream;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 
 import android.os.Environment;
 
 import com.strand.global.MessageCode;
+import com.strand.global.StrandLog;
 
 /**
  * 
  * A queue of file paths to be transferred, with state saved to SD card.
- * TODO: Save/restore state.
  *
  */
 public class FileManager {
@@ -22,7 +29,36 @@ public class FileManager {
     
     protected FileManager() {
         files = new LinkedList<String>();
+        
         // Load files already in queue from SD log
+        try {
+            String path;
+            FileInputStream fis = new FileInputStream(DIRECTORY + "/file_queue.txt");
+            BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+            while ((path = br.readLine()) != null && !"".equals(path)) {
+                add(path);
+            }
+        } catch (FileNotFoundException e) {
+            StrandLog.e(ScreamService.TAG, "file_queue.txt not found");
+        } catch (IOException e) {
+            StrandLog.e(ScreamService.TAG, "IOException in readLine() of file_queue.txt");
+        }
+    }
+    
+    private void save() {
+        FileWriter fWriter;
+        BufferedWriter writer;
+        try {
+            fWriter = new FileWriter(DIRECTORY + "/file_queue.txt");
+            writer = new BufferedWriter(fWriter);
+            for (String path : files) {
+                writer.append(path);
+                writer.newLine();
+            }
+            writer.close();
+        } catch (Exception e) {
+            StrandLog.e(ScreamService.TAG, "IOException in writing file_queue.txt");
+        }
     }
     
     public boolean isEmpty() {
@@ -33,6 +69,7 @@ public class FileManager {
         try {
             String path = files.pop();
             files.add(path);
+            save();
             return path;
         } catch (NoSuchElementException e) {
             return null;
@@ -41,14 +78,16 @@ public class FileManager {
     
     public void add(String path) {
         if (path != null) {
-            ScreamService.log("Adding file to queue: " + path);
-            files.add(path);   
+            StrandLog.d(ScreamService.TAG, "Adding file to queue: " + path);
+            files.add(path); 
+            save();
         }
     }
     
     public void remove(String path) {
-        ScreamService.log("Removing file from queue: " + path);
+        StrandLog.d(ScreamService.TAG, "Removing file from queue: " + path);
         files.remove(path);
+        save();
     }
     
     public static FileManager getInstance() {
