@@ -12,7 +12,7 @@ import android.os.Bundle;
 import android.widget.ImageView;
 
 public class DisplayImages extends ScreamActivity {
-
+    
     private ImageView imageView;
     
     private ArrayList<String> images;
@@ -25,7 +25,7 @@ public class DisplayImages extends ScreamActivity {
     public void onCreate(Bundle savedInstanceState) {
         
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.images);
+        setContentView();
         
         imageView = (ImageView) findViewById(R.id.imageView);
         images = getImages();
@@ -45,15 +45,20 @@ public class DisplayImages extends ScreamActivity {
             public void run() {
                 try {
                     // Create a record file to indicate that a screenshot has successfully been taken
+                    record.getParentFile().mkdirs();
                     record.createNewFile();
                 } catch (IOException e) {
                     StrandLog.e(ScreamService.TAG, "IOException in createNewFile()");
                 }
-                postDelayed(runnable, 5000);
+                postDelayed(runnable, 10000);
             }
             
         });
         
+    }
+    
+    protected void setContentView() {
+        setContentView(R.layout.images);
     }
     
     @Override
@@ -70,12 +75,13 @@ public class DisplayImages extends ScreamActivity {
                 Bitmap bitmap = BitmapFactory.decodeFile(path);
                 imageView.setImageBitmap(bitmap);
                 File image = new File(path);
-                record = new File(FileManager.DIRECTORY + "/screenshots/" + image.getName() + ".txt");
+                record = new File(FileManager.DIRECTORY + "/screenshots/" + getClass().getName() + "/" + image.getName() + ".txt");
                 if (!record.exists()) {
                     ScreamService.getInstance().requestScreenshot();
                     StrandLog.d(ScreamService.TAG, "Requesting screenshot for " + image.getName());
                 } else {
                     StrandLog.d(ScreamService.TAG, "Screenshot previously requested for " + image.getName());
+                    postDelayed(runnable, 60000);
                 }
             } else {
                 loadImage();

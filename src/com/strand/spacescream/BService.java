@@ -37,7 +37,6 @@ public class BService extends StrandBindingService{
 
 	@Override
 	protected void msgREQ_ACT(Message msg) {
-	    StrandLog.d(ScreamService.TAG, "REQ_ACT message received");
 	    
 	    Message reply;
 	    if (ScreamService.getInstance().screenshotRequested()) {

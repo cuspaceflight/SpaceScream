@@ -7,8 +7,6 @@ import android.os.Bundle;
 import android.os.Handler;
 
 public class ScreamActivity extends Activity {
-
-    private boolean active = false;
     
     private Handler handler = new Handler();
     private ArrayList<Runnable> runnables = new ArrayList<Runnable>();
@@ -18,19 +16,14 @@ public class ScreamActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ScreamService.getInstance().registerActivity(this);
-        active = true;
     }
     
     @Override
     public void onDestroy() {
         super.onDestroy();
-        try {
-            ScreamService.getInstance().activityEnding(this);
+        if (ScreamService.getInstance() != null) {
             ScreamService.getInstance().unregisterActivity(this);
-        } catch (NullPointerException e) {
-            // Probably ending app as Service is being destroyed
         }
-        active = false;
     }
     
     @Override
@@ -57,10 +50,6 @@ public class ScreamActivity extends Activity {
             runnables.add(r);
         }
         handler.postDelayed(r, delayMillis);
-    }
-    
-    public boolean isRunning() {
-        return !isFinishing() && active;
     }
     
     protected void registerScreenshotListener(Runnable r) {

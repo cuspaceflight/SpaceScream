@@ -140,6 +140,7 @@ public class PlayVideos extends ScreamActivity {
             if (mediaRecorder != null) {
                 try {
                     mediaRecorder.stop();
+                    mediaRecorder.reset();
                     mediaRecorder.release();
                     
                     if (interrupted) {

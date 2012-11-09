@@ -1,6 +1,5 @@
 package com.strand.spacescream;
 
-import android.app.Activity;
 import android.app.Service;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -44,6 +43,7 @@ public class ScreamService extends Service {
         AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 
                 audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0);
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
         
         handler = new Handler();
         
@@ -66,6 +66,11 @@ public class ScreamService extends Service {
                     intent.setClass(ScreamService.this, DisplayImages.class);
                     break;
                     
+                case 3:
+                    StrandLog.d(TAG, "Starting DisplayWindowImages activity");
+                    intent.setClass(ScreamService.this, DisplayWindowImages.class);
+                    break;
+                    
                 default:
                     stage = 0;
                     handler.post(this);
@@ -81,7 +86,7 @@ public class ScreamService extends Service {
         handler.postDelayed(runNext, 5000); 
     }
     
-    /**
+    /*
      * If Service is already running and start command is received, not much
      * needs to be done (we don't particularly need the params in the intent).
      */
@@ -95,38 +100,30 @@ public class ScreamService extends Service {
         StrandLog.d(TAG, "Ending Scream in Space!");
         ending = true;
         handler.removeCallbacks(runNext);
-        if (screamActivity != null && screamActivity.isRunning()) {
+        if (screamActivity != null && !screamActivity.isFinishing()) {
             screamActivity.finish();
         }
         instance = null;
         super.onDestroy();
     }
     
+    // Public methods BService or a ScreamActivity might need to call
+    
     public static ScreamService getInstance() {
         return instance;
     }
     
-    // Public methods a ScreamActivity might need to call:
-    
     public void registerActivity(ScreamActivity activity) {
-        if (screamActivity != null) {
-            if (screamActivity.isRunning()) {
-                screamActivity.finish();
-            }
+        if (screamActivity != null && !screamActivity.isFinishing()) {
+            screamActivity.finish();
         }
         screamActivity = activity;
     }
     
     public void unregisterActivity(ScreamActivity activity) {
-        String activityName = activity.getClass().getName();
-        String currentName = screamActivity.getClass().getName();
+
+        screamActivity = null;
         
-        if (currentName.equals(activityName)) {
-            screamActivity = null;
-        }
-    }
-    
-    public void activityEnding(Activity activity) {
         StrandLog.d(TAG, activity.getClass().getName() + " reports it is ending");
         if (!ending) {
             StrandLog.d(TAG, "Scheduled next stage to run");
@@ -140,13 +137,15 @@ public class ScreamService extends Service {
     }
     
     public boolean screenshotRequested() {
-        return screenshot;
+        boolean requested = screenshot;
+        screenshot = false;
+        return requested;
     }
     
     public void screenshotComplete() {
         screenshot = false;
         StrandLog.d(TAG, "Screenshot has been taken");
-        if (screamActivity.isRunning()) {
+        if (screamActivity != null && !screamActivity.isFinishing()) {
             screamActivity.screenshotComplete();
         }
     }
