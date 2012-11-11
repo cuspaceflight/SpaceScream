@@ -11,12 +11,14 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.widget.ImageView;
 
-public class DisplayImages extends ScreamActivity {
+public class DisplayImages extends ScreamActivity implements ScreamActivity.ScreenshotListener {
     
-    private ImageView imageView;
+    protected ImageView imageView;
     
-    private ArrayList<String> images;
-    private int index = 0;
+    protected ArrayList<String> images;
+    protected int index = 0;
+    
+    protected String DIR = "DisplayImages";
     private File record;
     
     private Runnable runnable;
@@ -39,21 +41,7 @@ public class DisplayImages extends ScreamActivity {
             
         };
         
-        registerScreenshotListener(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    // Create a record file to indicate that a screenshot has successfully been taken
-                    record.getParentFile().mkdirs();
-                    record.createNewFile();
-                } catch (IOException e) {
-                    StrandLog.e(ScreamService.TAG, "IOException in createNewFile()");
-                }
-                postDelayed(runnable, 10000);
-            }
-            
-        });
+        registerScreenshotListener(this);
         
     }
     
@@ -75,7 +63,7 @@ public class DisplayImages extends ScreamActivity {
                 Bitmap bitmap = BitmapFactory.decodeFile(path);
                 imageView.setImageBitmap(bitmap);
                 File image = new File(path);
-                record = new File(FileManager.DIRECTORY + "/screenshots/" + getClass().getName() + "/" + image.getName() + ".txt");
+                record = new File(FileManager.DIRECTORY + "/screenshots/" + DIR + "/" + image.getName() + ".txt");
                 if (!record.exists()) {
                     ScreamService.getInstance().requestScreenshot();
                     StrandLog.d(ScreamService.TAG, "Requesting screenshot for " + image.getName());
@@ -104,6 +92,18 @@ public class DisplayImages extends ScreamActivity {
         }
         
         return images;
+    }
+    
+    @Override
+    public void screenshotTaken() {
+        try {
+            // Create a record file to indicate that a screenshot has successfully been taken
+            record.getParentFile().mkdirs();
+            record.createNewFile();
+        } catch (IOException e) {
+            StrandLog.e(ScreamService.TAG, "IOException in createNewFile()");
+        }
+        postDelayed(runnable, 10000);
     }
     
 }

@@ -39,7 +39,7 @@ public class FileManager {
                 add(path);
             }
         } catch (FileNotFoundException e) {
-            StrandLog.e(ScreamService.TAG, "file_queue.txt not found");
+            StrandLog.d(ScreamService.TAG, "file_queue.txt not found");
         } catch (IOException e) {
             StrandLog.e(ScreamService.TAG, "IOException in readLine() of file_queue.txt");
         }

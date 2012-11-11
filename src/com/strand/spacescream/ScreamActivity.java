@@ -10,7 +10,7 @@ public class ScreamActivity extends Activity {
     
     private Handler handler = new Handler();
     private ArrayList<Runnable> runnables = new ArrayList<Runnable>();
-    private Runnable screenshotListener;
+    private ScreenshotListener screenshotListener;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -52,13 +52,17 @@ public class ScreamActivity extends Activity {
         handler.postDelayed(r, delayMillis);
     }
     
-    protected void registerScreenshotListener(Runnable r) {
+    protected void registerScreenshotListener(ScreenshotListener r) {
         screenshotListener = r;
     }
     
     public void screenshotComplete() {
         if (screenshotListener != null) {
-            handler.post(screenshotListener);
+            screenshotListener.screenshotTaken();
         }
+    }
+    
+    public static interface ScreenshotListener {
+        public void screenshotTaken();
     }
 }

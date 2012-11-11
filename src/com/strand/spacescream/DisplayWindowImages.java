@@ -1,68 +1,43 @@
 package com.strand.spacescream;
 
-import java.io.IOException;
+import java.io.File;
 
-import android.graphics.PixelFormat;
-import android.hardware.Camera;
 import android.os.Bundle;
-import android.view.SurfaceHolder;
-import android.view.SurfaceHolder.Callback;
-import android.view.SurfaceView;
 
-import com.strand.global.StrandLog;
-
-public class DisplayWindowImages extends DisplayImages implements Callback {
-
-    private SurfaceView surfaceView;
-    private SurfaceHolder surfaceHolder;
-    private Camera camera;
+public class DisplayWindowImages extends DisplayImages {
+    
+    private Preview preview;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        getWindow().setFormat(PixelFormat.UNKNOWN);
+        preview = (Preview) findViewById(R.id.surfaceView);
         
-        surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
-        surfaceHolder = surfaceView.getHolder();
-        surfaceHolder.addCallback(this);
-        surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        surfaceHolder.setKeepScreenOn(true);
-       
-        camera = Camera.open();
+        DIR = "DisplayWindowImages";
     }
     
     @Override
     protected void setContentView() {
-        setContentView(R.layout.window);
+        setContentView(R.layout.window_image);
     }
-
+    
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        if (camera != null) {
-            camera.startPreview();
-            StrandLog.d(ScreamService.TAG, "Starting camera preview");
-        }
-    }
-
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        if (camera != null) {
-            try {
-                camera.setPreviewDisplay(surfaceHolder);
-            } catch (IOException e) {
-                StrandLog.e(ScreamService.TAG, "IOException in setPreviewDisplay");
+    public void screenshotTaken() {
+        
+        String path = FileManager.DIRECTORY + "/photos/" + System.currentTimeMillis() + ".jpg";
+        
+        preview.capturePhoto(path, new Preview.SavedCallback() {
+            
+            @Override
+            public void photoSaved(File image, File thumbnail) {
+                // Request transfer of photo thumbnail; full image can be requested later
+                FileManager.getInstance().add(thumbnail.getPath());
+                DisplayWindowImages.super.screenshotTaken(); 
             }
-        }
-    }
+            
+        });
 
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        if (camera != null) {
-            camera.stopPreview();
-            camera.release();
-            camera = null;
-        }
     }
     
 }

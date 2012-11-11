@@ -107,7 +107,11 @@ public class PlayVideos extends ScreamActivity {
     
     private void startRecording() {
         
-        if (!(new File(audioPath)).exists()) {
+        File audio = new File(audioPath);
+        
+        if (!audio.exists()) {
+            
+            audio.getParentFile().mkdirs();
             
             StrandLog.d(ScreamService.TAG, "Starting audio recording to " + audioPath);
             mediaRecorder = new MediaRecorder();

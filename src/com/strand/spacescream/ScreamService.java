@@ -1,11 +1,14 @@
 package com.strand.spacescream;
 
+import java.io.File;
+
 import android.app.Service;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Handler;
 import android.os.IBinder;
 
+import com.strand.global.MessageCode;
 import com.strand.global.StrandLog;
 
 public class ScreamService extends Service {
@@ -86,12 +89,27 @@ public class ScreamService extends Service {
         handler.postDelayed(runNext, 5000); 
     }
     
-    /*
-     * If Service is already running and start command is received, not much
-     * needs to be done (we don't particularly need the params in the intent).
-     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        
+        String params = intent.getStringExtra(MessageCode.PARAM_LIST);
+        
+        if ("reset".equals(params)) {
+            
+            // A reset of all data has been requested
+            delete(new File(FileManager.DIRECTORY + "/audio"));
+            delete(new File(FileManager.DIRECTORY + "/screenshots"));
+
+        } else {
+        
+            // Check to see if we've been passed a file path to request transfer
+            File file = new File(params);
+            if (file.exists()) {
+                FileManager.getInstance().add(file.getPath());
+            }
+            
+        }
+        
         return START_REDELIVER_INTENT;
     }
     
@@ -105,6 +123,17 @@ public class ScreamService extends Service {
         }
         instance = null;
         super.onDestroy();
+    }
+    
+    public void delete(File file) {
+        if (file.isDirectory()) {
+            for (File c : file.listFiles()) {
+                delete(c);
+            }
+        }
+        if (!file.delete()) {
+            StrandLog.e(TAG, "Failed to delete file:" + file.getPath());
+        }
     }
     
     // Public methods BService or a ScreamActivity might need to call
