@@ -46,8 +46,7 @@ public class Intro extends DisplayImages {
                     });
                     player.setDataSource(FileManager.DIRECTORY + "/soundtrack.mp3");
                     player.prepare();
-                    //player.start();
-                    postDelayed(runnable = mainRunnable, 5000);
+                    player.start();
                 } catch (IllegalArgumentException e) {
                     StrandLog.e(ScreamService.TAG, "IllegalArgumentException in setDataSource");
                     postDelayed(runnable = mainRunnable, 5000);
