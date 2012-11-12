@@ -13,6 +13,15 @@ import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.widget.VideoView;
 
+/**
+ * Plays each video, and records audio if recording isn't already present on
+ * the SD card. Completed recordings are queued for transfer.
+ * 
+ * SD: Looks for videos in videos/ directory.
+ * 
+ * @author ejc74
+ *
+ */
 public class PlayVideos extends ScreamActivity {
 
     private ArrayList<String> videos;
@@ -68,7 +77,7 @@ public class PlayVideos extends ScreamActivity {
         videoView.setOnPreparedListener(preparedListener);
         videoView.setOnCompletionListener(completionListener);
         
-        videos = getVideos();
+        videos = FileManager.getFiles("videos");
     }
     
     @Override
@@ -161,20 +170,6 @@ public class PlayVideos extends ScreamActivity {
             }
         }
         
-    }
-    
-    private ArrayList<String> getVideos() {
-        StrandLog.d(ScreamService.TAG, "Finding videos on SD card");
-        
-        File directory = new File(FileManager.DIRECTORY, "videos");
-        File[] files = directory.listFiles();
-        
-        ArrayList<String> videos = new ArrayList<String>();
-        for (File file : files) {
-            videos.add(file.getAbsolutePath());
-        }
-        
-        return videos;
     }
     
 }

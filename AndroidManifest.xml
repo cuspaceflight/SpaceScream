@@ -1,48 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="com.strand.spacescream"
-      android:versionCode="1"
-      android:versionName="1.0">
+    package="com.strand.spacescream"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
     <uses-sdk android:minSdkVersion="10" />
 
-    <uses-permission android:name="android.permission.RECORD_AUDIO"></uses-permission>
-  	<uses-permission android:name="android.permission.CAMERA"></uses-permission>
-  	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
-  	<uses-feature android:name="android.hardware.camera" />
-    
-    <application android:icon="@drawable/icon" android:label="@string/app_name">
-        <activity android:name=".SpaceScream"
-                  android:label="@string/app_name" android:screenOrientation="landscape"
-                  android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
-            <intent-filter>
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        
-        <activity android:name=".PlayVideos"
-                  android:label="@string/app_name" android:screenOrientation="landscape"
-                  android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
-        </activity>
-        
-        <activity android:name=".DisplayImages"
-                  android:label="@string/app_name" android:screenOrientation="landscape"
-                  android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
-        </activity>
-        
-        <activity android:name=".DisplayWindowImages"
-                  android:label="@string/app_name" android:screenOrientation="landscape"
-                  android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
-        </activity>
-        
-        <activity android:name=".CaptureWindow"
-                  android:label="@string/app_name" android:screenOrientation="landscape"
-                  android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
-        </activity>
-        
-        <service android:name=".ScreamService" />
-        <service android:name=".BService" android:exported="true" />
-        
+    <uses-permission android:name="android.permission.RECORD_AUDIO" >
+    </uses-permission>
+    <uses-permission android:name="android.permission.CAMERA" >
+    </uses-permission>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" >
+    </uses-permission>
 
+    <uses-feature android:name="android.hardware.camera" />
+
+    <application
+        android:icon="@drawable/icon"
+        android:label="@string/app_name" >
+        <activity
+            android:name=".PlayVideos"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
+        </activity>
+        <activity
+            android:name=".DisplayImages"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
+        </activity>
+        <activity
+            android:name=".DisplayWindowImages"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
+        </activity>
+        <activity
+            android:name=".CaptureWindow"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
+        </activity>
+        <activity
+            android:name=".Intro"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
+        </activity>
+
+        <service android:name=".ScreamService" />
+        <service
+            android:name=".BService"
+            android:exported="true" />
     </application>
-    
+
 </manifest>

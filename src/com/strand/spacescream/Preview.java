@@ -19,6 +19,13 @@ import android.view.SurfaceView;
 
 import com.strand.global.StrandLog;
 
+/**
+ * Extends SurfaceView to add Camera preview functionality by default, and also
+ * a capturePhoto method for taking pictures.
+ * 
+ * @author ejc74
+ *
+ */
 public class Preview extends SurfaceView implements SurfaceHolder.Callback {
 
     private Camera camera;

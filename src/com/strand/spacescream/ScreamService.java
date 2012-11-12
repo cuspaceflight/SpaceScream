@@ -11,6 +11,14 @@ import android.os.IBinder;
 import com.strand.global.MessageCode;
 import com.strand.global.StrandLog;
 
+/**
+ * Main Service of the app; launches each activity and schedules next after
+ * previous one finishes. Repeats cycle continuously until stop command
+ * received. 
+ * 
+ * @author ejc74
+ *
+ */
 public class ScreamService extends Service {
     
     public final static String TAG = "SpaceScream";
@@ -60,16 +68,21 @@ public class ScreamService extends Service {
                 switch (++stage) {
                 
                 case 1:
+                    StrandLog.d(TAG, "Starting Intro activity");
+                    intent.setClass(ScreamService.this, Intro.class);
+                    break;
+                
+                case 2:
                     StrandLog.d(TAG, "Starting PlayVideos activity");
                     intent.setClass(ScreamService.this, PlayVideos.class);
                     break;
                     
-                case 2:
+                case 3:
                     StrandLog.d(TAG, "Starting DisplayImages activity");
                     intent.setClass(ScreamService.this, DisplayImages.class);
                     break;
                     
-                case 3:
+                case 4:
                     StrandLog.d(TAG, "Starting DisplayWindowImages activity");
                     intent.setClass(ScreamService.this, DisplayWindowImages.class);
                     break;

@@ -10,7 +10,15 @@ import com.strand.global.MessageCode;
 import com.strand.global.StrandBindingService;
 import com.strand.global.StrandLog;
 
-public class BService extends StrandBindingService{
+/**
+ * Main MCA Binding Service, which simply starts the ScreamService (which
+ * controls the main functionality of the app), and deals with sending &
+ * receiving messages.
+ * 
+ * @author ejc74
+ *
+ */
+public class BService extends StrandBindingService {
     
     @Override
     public IBinder onBind(Intent intent) {

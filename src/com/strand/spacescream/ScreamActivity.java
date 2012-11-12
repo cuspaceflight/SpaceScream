@@ -6,7 +6,13 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 
-public class ScreamActivity extends Activity {
+/**
+ * Base class for all activites in app, with extra functionality to deal with
+ * the activity lifecycle, plus a few extra helpers.
+ * @author ejc74
+ *
+ */
+public abstract class ScreamActivity extends Activity {
     
     private Handler handler = new Handler();
     private ArrayList<Runnable> runnables = new ArrayList<Runnable>();

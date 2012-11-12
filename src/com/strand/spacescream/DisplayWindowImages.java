@@ -4,6 +4,14 @@ import java.io.File;
 
 import android.os.Bundle;
 
+/**
+ * Similar to DisplayImages, but including a live camera preview, and takes
+ * phone camera photos when each image is displayed (only transfer of photo
+ * thumbnails requested - full image can be sent later by use of app parameter).
+ * 
+ * @author ejc74
+ *
+ */
 public class DisplayWindowImages extends DisplayImages {
     
     private Preview preview;

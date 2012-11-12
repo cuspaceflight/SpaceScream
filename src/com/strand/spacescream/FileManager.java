@@ -2,11 +2,13 @@ package com.strand.spacescream;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 
@@ -16,8 +18,10 @@ import com.strand.global.MessageCode;
 import com.strand.global.StrandLog;
 
 /**
+ * A queue of file paths to be transferred, with state saved to SD card, plus
+ * other useful file methods.
  * 
- * A queue of file paths to be transferred, with state saved to SD card.
+ * @author ejc74
  *
  */
 public class FileManager {
@@ -95,6 +99,23 @@ public class FileManager {
             instance = new FileManager();
         }
         return instance;
+    }
+    
+    public static ArrayList<String> getFiles(String subfolder) {
+        StrandLog.d(ScreamService.TAG, "Finding files in " + subfolder + " directory on SD card");
+        
+        File directory = new File(FileManager.DIRECTORY, subfolder);
+        File[] files = directory.listFiles();
+        
+        ArrayList<String> fileList = new ArrayList<String>();
+        
+        if (files != null) {
+            for (File file : files) {
+                fileList.add(file.getAbsolutePath());
+            }
+        }
+        
+        return fileList;
     }
     
 }

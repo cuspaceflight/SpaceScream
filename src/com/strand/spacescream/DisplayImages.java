@@ -11,6 +11,15 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.widget.ImageView;
 
+/**
+ * Loads images from SD card, displays on screen one by one, and requests
+ * screenshots (if not previously requested).
+ * 
+ * SD: Looks for images in images/ directory.
+ * 
+ * @author ejc74
+ *
+ */
 public class DisplayImages extends ScreamActivity implements ScreamActivity.ScreenshotListener {
     
     protected ImageView imageView;
@@ -21,7 +30,7 @@ public class DisplayImages extends ScreamActivity implements ScreamActivity.Scre
     protected String DIR = "DisplayImages";
     private File record;
     
-    private Runnable runnable;
+    protected Runnable runnable;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -30,7 +39,7 @@ public class DisplayImages extends ScreamActivity implements ScreamActivity.Scre
         setContentView();
         
         imageView = (ImageView) findViewById(R.id.imageView);
-        images = getImages();
+        images = FileManager.getFiles("images");
         
         runnable = new Runnable() {
 
@@ -69,7 +78,7 @@ public class DisplayImages extends ScreamActivity implements ScreamActivity.Scre
                     StrandLog.d(ScreamService.TAG, "Requesting screenshot for " + image.getName());
                 } else {
                     StrandLog.d(ScreamService.TAG, "Screenshot previously requested for " + image.getName());
-                    postDelayed(runnable, 60000);
+                    postDelayed(runnable, 20000);
                 }
             } else {
                 loadImage();
@@ -78,20 +87,6 @@ public class DisplayImages extends ScreamActivity implements ScreamActivity.Scre
             StrandLog.d(ScreamService.TAG, "No more images left in queue; ending activity");            
             finish();
         }
-    }
-    
-    private ArrayList<String> getImages() {
-        StrandLog.d(ScreamService.TAG, "Finding images on SD card");
-        
-        File directory = new File(FileManager.DIRECTORY, "images");
-        File[] files = directory.listFiles();
-        
-        ArrayList<String> images = new ArrayList<String>();
-        for (File file : files) {
-            images.add(file.getAbsolutePath());
-        }
-        
-        return images;
     }
     
     @Override
