@@ -54,7 +54,6 @@ public class ScreamService extends Service {
         AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 
                 audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0);
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
         
         handler = new Handler();
         
@@ -87,6 +86,11 @@ public class ScreamService extends Service {
                     intent.setClass(ScreamService.this, DisplayWindowImages.class);
                     break;
                     
+                case 5:
+                    StrandLog.d(TAG, "Starting Outro activity");
+                    intent.setClass(ScreamService.this, Outro.class);
+                    break;
+                    
                 default:
                     stage = 0;
                     handler.post(this);
@@ -109,7 +113,7 @@ public class ScreamService extends Service {
         
         if ("reset".equals(params)) {
             
-            // A reset of all data has been requested
+            StrandLog.d(TAG, "A reset of all data has been requested");
             delete(new File(FileManager.DIRECTORY + "/audio"));
             delete(new File(FileManager.DIRECTORY + "/screenshots"));
 
@@ -118,6 +122,7 @@ public class ScreamService extends Service {
             // Check to see if we've been passed a file path to request transfer
             File file = new File(params);
             if (file.exists()) {
+                StrandLog.d(TAG, "File transfer requested: " + file.getPath());
                 FileManager.getInstance().add(file.getPath());
             }
             
@@ -144,8 +149,8 @@ public class ScreamService extends Service {
                 delete(c);
             }
         }
-        if (!file.delete()) {
-            StrandLog.e(TAG, "Failed to delete file:" + file.getPath());
+        if (file.exists() && !file.delete()) {
+            StrandLog.e(TAG, "Failed to delete file: " + file.getPath());
         }
     }
     

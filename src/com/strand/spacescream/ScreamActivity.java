@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.WindowManager;
 
 /**
  * Base class for all activites in app, with extra functionality to deal with
  * the activity lifecycle, plus a few extra helpers.
+ * 
  * @author ejc74
  *
  */
@@ -22,6 +24,7 @@ public abstract class ScreamActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ScreamService.getInstance().registerActivity(this);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
     
     @Override

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Hello World, SpaceScream!</string>
     <string name="app_name">Scream In Space</string>
     <string name="image">image</string>
+    
+    <!-- Inscription by Maxwell above Cavendish Laboratory entrance -->
+    <string name="rtty_message">The works of the Lord are great, sought out of all them that have pleasure therein</string>
 </resources>

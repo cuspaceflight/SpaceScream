@@ -8,6 +8,7 @@ import com.strand.global.StrandLog;
 
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
+import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaRecorder;
 import android.os.Bundle;
@@ -30,6 +31,7 @@ public class PlayVideos extends ScreamActivity {
     private VideoView videoView;
     private OnPreparedListener preparedListener;
     private OnCompletionListener completionListener;
+    private OnErrorListener errorListener;
     
     private MediaRecorder mediaRecorder;
     private String audioPath;
@@ -72,10 +74,22 @@ public class PlayVideos extends ScreamActivity {
             
         };
         
+        errorListener = new OnErrorListener() {
+
+            @Override
+            public boolean onError(MediaPlayer mp, int what, int extra) {
+                stopRecording(true);
+                postDelayed(runnable, 10000);
+                return true;
+            }
+            
+        };
+        
         videoView = (VideoView) findViewById(R.id.videoView);
         videoView.setZOrderMediaOverlay(true);
         videoView.setOnPreparedListener(preparedListener);
         videoView.setOnCompletionListener(completionListener);
+        videoView.setOnErrorListener(errorListener);
         
         videos = FileManager.getFiles("videos");
     }

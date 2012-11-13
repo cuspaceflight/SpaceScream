@@ -9,6 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 
@@ -110,6 +111,8 @@ public class FileManager {
         ArrayList<String> fileList = new ArrayList<String>();
         
         if (files != null) {
+            // Sort alphabetically by filename
+            Arrays.sort(files);
             for (File file : files) {
                 fileList.add(file.getAbsolutePath());
             }

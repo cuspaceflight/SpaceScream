@@ -27,6 +27,8 @@ public class DisplayImages extends ScreamActivity implements ScreamActivity.Scre
     protected ArrayList<String> images;
     protected int index = 0;
     
+    protected long delay = 10000;
+    
     protected String DIR = "DisplayImages";
     private File record;
     
@@ -78,7 +80,7 @@ public class DisplayImages extends ScreamActivity implements ScreamActivity.Scre
                     StrandLog.d(ScreamService.TAG, "Requesting screenshot for " + image.getName());
                 } else {
                     StrandLog.d(ScreamService.TAG, "Screenshot previously requested for " + image.getName());
-                    postDelayed(runnable, 20000);
+                    postDelayed(runnable, delay);
                 }
             } else {
                 loadImage();
@@ -98,7 +100,7 @@ public class DisplayImages extends ScreamActivity implements ScreamActivity.Scre
         } catch (IOException e) {
             StrandLog.e(ScreamService.TAG, "IOException in createNewFile()");
         }
-        postDelayed(runnable, 10000);
+        postDelayed(runnable, delay);
     }
     
 }
