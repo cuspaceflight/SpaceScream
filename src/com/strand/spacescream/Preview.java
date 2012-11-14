@@ -31,7 +31,7 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback {
     private Camera camera;
     private SurfaceHolder holder;
     private String filepath;
-    private SavedCallback savedCallback;
+    private SavedPhotoCallback savedCallback;
     private Handler handler;
     
     public Preview(Context context) {
@@ -60,7 +60,7 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback {
         capturePhoto(path, null);
     }
     
-    public void capturePhoto(String path, SavedCallback callback) {
+    public void capturePhoto(String path, SavedPhotoCallback callback) {
         
         filepath = path;
         savedCallback = callback;
@@ -170,7 +170,7 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
     
-    public static interface SavedCallback {
+    public static interface SavedPhotoCallback {
         public void photoSaved(File image, File thumbnail);
     }
 

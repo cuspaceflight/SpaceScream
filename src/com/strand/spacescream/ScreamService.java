@@ -5,6 +5,8 @@ import java.io.File;
 import android.app.Service;
 import android.content.Intent;
 import android.media.AudioManager;
+import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 
@@ -61,34 +63,27 @@ public class ScreamService extends Service {
 
             @Override
             public void run() {
-                Intent intent = new Intent();
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 
                 switch (++stage) {
                 
                 case 1:
-                    StrandLog.d(TAG, "Starting Intro activity");
-                    intent.setClass(ScreamService.this, Intro.class);
+                    launchActivity(Intro.class, null);
                     break;
                 
                 case 2:
-                    StrandLog.d(TAG, "Starting PlayVideos activity");
-                    intent.setClass(ScreamService.this, PlayVideos.class);
+                    launchActivity(PlayVideos.class, null);
                     break;
                     
                 case 3:
-                    StrandLog.d(TAG, "Starting DisplayImages activity");
-                    intent.setClass(ScreamService.this, DisplayImages.class);
+                    launchActivity(DisplayImages.class, null);
                     break;
                     
                 case 4:
-                    StrandLog.d(TAG, "Starting DisplayWindowImages activity");
-                    intent.setClass(ScreamService.this, DisplayWindowImages.class);
+                    launchActivity(DisplayWindowImages.class, null);
                     break;
                     
                 case 5:
-                    StrandLog.d(TAG, "Starting Outro activity");
-                    intent.setClass(ScreamService.this, Outro.class);
+                    launchActivity(Outro.class, null);
                     break;
                     
                 default:
@@ -96,9 +91,7 @@ public class ScreamService extends Service {
                     handler.post(this);
                     
                 }
-                if (intent.getComponent() != null) {
-                    startActivity(intent);
-                }
+
             }
             
         };
@@ -106,24 +99,82 @@ public class ScreamService extends Service {
         handler.postDelayed(runNext, 5000); 
     }
     
+    /**
+     * Typically we don't require parameters for the app to run standard
+     * schedule. We handle optional PARAM_LIST command here.
+     * 
+     * Example PARAM_LIST = "?action=video&size=1048576&hq=true"
+     * 
+     * By default main app cycle won't run after command is followed, unless
+     * PARAM_LIST contains "run=true", except in case of video recording, when
+     * the run argument is ignored.
+     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         
         String params = intent.getStringExtra(MessageCode.PARAM_LIST);
+        params = "?action=video&size=2048576&hq=true";
         
-        if ("reset".equals(params)) {
+        Uri uri = Uri.parse(params);
+        String action = uri.getQueryParameter("action");
+        
+        if (params != null && !"".equals(params) && screamActivity == null
+                && !"true".equals(uri.getQueryParameter("run"))) {
+            // We don't want to app to carry on running by default
+            handler.removeCallbacks(runNext);
+        }
+        
+        if ("reset".equals(action)) {
             
+            // This effectively resets the app
             StrandLog.d(TAG, "A reset of all data has been requested");
             delete(new File(FileManager.DIRECTORY + "/audio"));
             delete(new File(FileManager.DIRECTORY + "/screenshots"));
-
-        } else {
-        
-            // Check to see if we've been passed a file path to request transfer
-            File file = new File(params);
-            if (file.exists()) {
-                StrandLog.d(TAG, "File transfer requested: " + file.getPath());
-                FileManager.getInstance().add(file.getPath());
+            
+        } else if ("delete".equals(action)) {
+            
+            // Used to clear SD space
+            StrandLog.d(TAG, "Deletion of captured photos/videos requested");
+            delete(new File(FileManager.DIRECTORY + "/photos"));
+            delete(new File(FileManager.DIRECTORY + "/recorded"));
+            
+            
+        } else if ("video".equals(action)) {
+            
+            StrandLog.d(TAG, "Command received to record a video from phone");
+            if (screamActivity == null) {
+                handler.removeCallbacks(runNext);
+                
+                String size = uri.getQueryParameter("size");
+                String hq = uri.getQueryParameter("hq");
+                
+                Bundle bundle = new Bundle();
+                if (size != null) {
+                    try {
+                        bundle.putLong("size", Long.parseLong(size));
+                    } catch (NumberFormatException e) {
+                        StrandLog.e(TAG, "NumberFormatException in parsing size parameter");
+                    }
+                }
+                
+                if ("true".equals(hq)) {
+                    bundle.putBoolean("hq", true);
+                }
+                
+                launchActivity(RecordVideo.class, bundle);
+            } else {
+                StrandLog.d(TAG, "Another activity is already running - cannot record video!");
+            }
+            
+        } else if ("file".equals(action)) {
+            
+            String path = uri.getQueryParameter("path");
+            if (path != null) {
+                File file = new File(path);
+                if (file.exists()) {
+                    StrandLog.d(TAG, "File transfer requested: " + file.getPath());
+                    FileManager.getInstance().add(file.getPath());
+                }
             }
             
         }
@@ -143,7 +194,18 @@ public class ScreamService extends Service {
         super.onDestroy();
     }
     
-    public void delete(File file) {
+    private void launchActivity(Class<? extends ScreamActivity> activity, Bundle bundle) {
+        StrandLog.d(TAG, "Starting " + activity.getSimpleName() + " activity");
+        Intent intent = new Intent();
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (bundle != null) {
+            intent.putExtras(bundle);
+        }
+        intent.setClass(ScreamService.this, activity);
+        startActivity(intent);
+    }
+    
+    private void delete(File file) {
         if (file.isDirectory()) {
             for (File c : file.listFiles()) {
                 delete(c);

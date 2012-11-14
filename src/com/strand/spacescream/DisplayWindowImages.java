@@ -35,7 +35,7 @@ public class DisplayWindowImages extends DisplayImages {
         
         String path = FileManager.DIRECTORY + "/photos/" + System.currentTimeMillis() + ".jpg";
         
-        preview.capturePhoto(path, new Preview.SavedCallback() {
+        preview.capturePhoto(path, new Preview.SavedPhotoCallback() {
             
             @Override
             public void photoSaved(File image, File thumbnail) {
