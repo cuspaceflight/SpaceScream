@@ -23,7 +23,7 @@ Operation
 
 Here we describe the standard operation of the app when it is started by the [MCA] (http://code.google.com/p/s-android/source/browse/trunk/apps/MCAv2).
 
-[ScreamService] (/cuspaceflight/SpaceScream/src/com/strand/scream/ScreamService.java) is the main Service for the app, and manages the Activity scheduling, as well as handling and parameters passed to the app. When run without any parameters, it will start the following Activities in turn, looping until a stop command is received.
+[ScreamService] (/cuspaceflight/SpaceScream/src/com/strand/scream/ScreamService.java) is the main Service for the app, and manages the Activity scheduling, as well as handling the parameters passed to the app. When run without any parameters, it will start the following activities in turn, looping until a stop command is received.
 
 ### Intro ###
 
