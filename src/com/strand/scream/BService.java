@@ -24,7 +24,7 @@ public class BService extends StrandBindingService {
     public IBinder onBind(Intent intent) {
     	
     	// Set the log file and working folder
-    	init("SpaceScream", Boolean.parseBoolean(intent.getStringExtra(MessageCode.DEBUG_FLAG)));
+    	init("scream", Boolean.parseBoolean(intent.getStringExtra(MessageCode.DEBUG_FLAG)));
     	
     	StrandLog.d(ScreamService.TAG, "Binding Service started");
     	

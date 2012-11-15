@@ -27,7 +27,7 @@ import com.strand.global.StrandLog;
  */
 public class FileManager {
 
-    public final static String DIRECTORY = Environment.getExternalStorageDirectory().toString() + MessageCode.WORKING_FOLDER + "SpaceScream";
+    public final static String DIRECTORY = Environment.getExternalStorageDirectory().toString() + MessageCode.WORKING_FOLDER + "scream";
     private static FileManager instance;
     
     private LinkedList<String> files;
