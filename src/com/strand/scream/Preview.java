@@ -10,12 +10,15 @@ import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
+import android.hardware.Camera.CameraInfo;
 import android.media.ExifInterface;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.WindowManager;
 
 import com.strand.global.StrandLog;
 
@@ -88,6 +91,22 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback {
             parameters.setJpegThumbnailQuality(50);
 
             camera.setParameters(parameters);
+            
+            CameraInfo info = new CameraInfo();
+            Camera.getCameraInfo(0, info);
+            WindowManager manager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+            int rotation = manager.getDefaultDisplay().getRotation();
+            int degrees = 0;
+            
+            switch (rotation) {
+                case Surface.ROTATION_0: degrees = 0; break;
+                case Surface.ROTATION_90: degrees = 90; break;
+                case Surface.ROTATION_180: degrees = 180; break;
+                case Surface.ROTATION_270: degrees = 270; break;
+            }
+
+            int result = (info.orientation - degrees + 360) % 360;
+            camera.setDisplayOrientation(result);
             
             StrandLog.d(ScreamService.TAG, "Starting camera preview");
             camera.startPreview();

@@ -22,6 +22,8 @@ import android.widget.ImageView;
  */
 public class Outro extends ScreamActivity {
 
+    private MediaPlayer player;
+    
     @Override
     public void onCreate(Bundle savedInstanceState) {
         
@@ -32,7 +34,7 @@ public class Outro extends ScreamActivity {
         Bitmap bitmap = BitmapFactory.decodeFile(FileManager.DIRECTORY + "/intro/01-cusf.png");
         imageView.setImageBitmap(bitmap);
         
-        MediaPlayer player = new MediaPlayer();
+        player = new MediaPlayer();
         try {
             player.setOnCompletionListener(new OnCompletionListener() {
 
@@ -57,6 +59,18 @@ public class Outro extends ScreamActivity {
             finish();
         }
         
+    }
+    
+    @Override
+    public void onPause() {
+        super.onPause();
+        
+        if (player != null) {
+            if (player.isPlaying()) {
+                player.stop();
+            }
+            player.release();
+        }
     }
     
 }
