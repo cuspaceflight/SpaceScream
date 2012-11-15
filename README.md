@@ -39,7 +39,7 @@ Displays still frame from each video in full screen (camera preview in backgroun
 
 ### DisplayWindowImages ###
 
-Displays still frame from each video in corner of screen, in front of camera preview. Requests screenshot for each (as before), and also takes a photo from phone camera, saving both full resolution version, and a thumbnail. The thumbnail is scheduled for file transfer.
+Displays still frame from each video in corner of screen, in front of camera preview. Requests screenshot for each (as before, only if one hasn't been taken before), and also takes a photo from phone camera, saving both full resolution version, and a thumbnail. The thumbnail is scheduled for file transfer.
 
 ### Outro ###
 
@@ -48,7 +48,19 @@ Plays earth.mp3 (composition by school children), and shows CUSF logo on screen 
 Parameters
 ----------
 
-The app accepts a `PARAM_LIST` string in query string form. Unless the paramter `run=false` is set, the standard app schedule will run as normal in addition to the particular command being followed. The following values of the `action` parameter are implemented:
+The app accepts a `PARAM_LIST` string in query string form. The app schedule will operate as described above without the need for any particular parameters.
+
+The `run` parameter allows you to explicitly specify which of the activities above should be included in the schedule, and takes the value of a bitmask:
+
+    (1) Intro = 1
+    (2) PlayVideos = 2
+    (3) DisplayImages = 4
+    (4) DisplayWindowImages = 8
+    (5) Outro = 16
+
+For example, `?run=14` corresponds to just the three main activities being run (2 + 4 + 8 = 14). `?run=0` could be of practical use in combination with an `action` parameter (below). By default, all activities will run.
+
+The following values of the `action` parameter are implemented:
 
 ### reset ###
 
@@ -67,8 +79,6 @@ This deletes the photos and recorded directories (the latter containing video re
 Example usage: `?action=video&size=2048576&hq=true`
 
 This command starts an Activity which isn't part of the main app schedule, which will record a video from the camera, and then request a file transfer. The `size` parameter specifies the maximum file size (in bytes) that the video file will be - it will continue recording until that size is reached. The `hq` parameter, if equal to true, will set the recording profile to `QUALITY_HIGH` (by default it is `QUALITY_LOW`).
-
-The `run` parameter is ignored for this action.
 
 ### file ###
 
