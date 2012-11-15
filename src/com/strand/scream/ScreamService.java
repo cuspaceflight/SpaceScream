@@ -1,4 +1,4 @@
-package com.strand.spacescream;
+package com.strand.scream;
 
 import java.io.File;
 
@@ -113,72 +113,82 @@ public class ScreamService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         
         String params = intent.getStringExtra(MessageCode.PARAM_LIST);
-        params = "?action=video&size=2048576&hq=true";
+        // params = "?action=video&size=2048576&hq=true";
         
-        Uri uri = Uri.parse(params);
-        String action = uri.getQueryParameter("action");
-        
-        if (params != null && !"".equals(params) && screamActivity == null
-                && !"true".equals(uri.getQueryParameter("run"))) {
-            // We don't want to app to carry on running by default
-            handler.removeCallbacks(runNext);
-        }
-        
-        if ("reset".equals(action)) {
+        if (params != null && !"".equals(params)) {
+            StrandLog.d(ScreamService.TAG, "PARAM_LIST received: " + params);
             
-            // This effectively resets the app
-            StrandLog.d(TAG, "A reset of all data has been requested");
-            delete(new File(FileManager.DIRECTORY + "/audio"));
-            delete(new File(FileManager.DIRECTORY + "/screenshots"));
+            Uri uri = Uri.parse(params);
             
-        } else if ("delete".equals(action)) {
-            
-            // Used to clear SD space
-            StrandLog.d(TAG, "Deletion of captured photos/videos requested");
-            delete(new File(FileManager.DIRECTORY + "/photos"));
-            delete(new File(FileManager.DIRECTORY + "/recorded"));
-            
-            
-        } else if ("video".equals(action)) {
-            
-            StrandLog.d(TAG, "Command received to record a video from phone");
-            if (screamActivity == null) {
+            if (screamActivity == null && "false".equals(uri.getQueryParameter("run"))) {
+                // If we have run=false, then we stop main app schedule from running
+                // eg. "?action=delete&run=false"
+                StrandLog.d(ScreamService.TAG, "Stopping main activity schedule");
                 handler.removeCallbacks(runNext);
+            }
+            
+            String action = uri.getQueryParameter("action");
+            
+            if ("reset".equals(action)) {
                 
-                String size = uri.getQueryParameter("size");
-                String hq = uri.getQueryParameter("hq");
+                // This effectively resets the app
+                StrandLog.d(TAG, "A reset of all data has been requested");
+                delete(new File(FileManager.DIRECTORY + "/audio"));
+                delete(new File(FileManager.DIRECTORY + "/screenshots"));
                 
-                Bundle bundle = new Bundle();
-                if (size != null) {
-                    try {
-                        bundle.putLong("size", Long.parseLong(size));
-                    } catch (NumberFormatException e) {
-                        StrandLog.e(TAG, "NumberFormatException in parsing size parameter");
+            } else if ("delete".equals(action)) {
+                
+                // Used to clear SD space
+                StrandLog.d(TAG, "Deletion of captured photos/videos requested");
+                delete(new File(FileManager.DIRECTORY + "/photos"));
+                delete(new File(FileManager.DIRECTORY + "/recorded"));
+                
+                
+            } else if ("video".equals(action)) {
+                
+                StrandLog.d(TAG, "Command received to record a video from phone");
+                if (screamActivity == null) {
+                    handler.removeCallbacks(runNext);
+                    
+                    String size = uri.getQueryParameter("size");
+                    String hq = uri.getQueryParameter("hq");
+                    
+                    Bundle bundle = new Bundle();
+                    if (size != null) {
+                        try {
+                            bundle.putLong("size", Long.parseLong(size));
+                        } catch (NumberFormatException e) {
+                            StrandLog.e(TAG, "NumberFormatException in parsing size parameter");
+                        }
+                    }
+                    
+                    if ("true".equals(hq)) {
+                        bundle.putBoolean("hq", true);
+                    }
+                    
+                    launchActivity(RecordVideo.class, bundle);
+                } else {
+                    StrandLog.d(TAG, "Another activity is already running - cannot record video!");
+                }
+                
+            } else if ("file".equals(action)) {
+                
+                String path = uri.getQueryParameter("path");
+                if (path != null) {
+                    File file = new File(path);
+                    if (file.exists()) {
+                        StrandLog.d(TAG, "File transfer requested: " + file.getPath());
+                        FileManager.getInstance().add(file.getPath());
                     }
                 }
                 
-                if ("true".equals(hq)) {
-                    bundle.putBoolean("hq", true);
-                }
-                
-                launchActivity(RecordVideo.class, bundle);
             } else {
-                StrandLog.d(TAG, "Another activity is already running - cannot record video!");
-            }
-            
-        } else if ("file".equals(action)) {
-            
-            String path = uri.getQueryParameter("path");
-            if (path != null) {
-                File file = new File(path);
-                if (file.exists()) {
-                    StrandLog.d(TAG, "File transfer requested: " + file.getPath());
-                    FileManager.getInstance().add(file.getPath());
-                }
+                // Not necessarily an error - by default we're passed PARAM_LIST = "1" it seems
+                StrandLog.d(ScreamService.TAG, "Action not recognised: " + action);
             }
             
         }
-        
+
         return START_REDELIVER_INTENT;
     }
     

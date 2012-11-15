@@ -3,12 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-        <com.strand.spacescream.Preview
+        <com.strand.scream.Preview
             android:id="@+id/surfaceView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_alignParentLeft="true" >
-        </com.strand.spacescream.Preview>
+        </com.strand.scream.Preview>
 
         <ImageView
             android:id="@+id/imageView"

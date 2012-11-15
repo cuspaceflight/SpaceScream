@@ -1,4 +1,4 @@
-package com.strand.spacescream;
+package com.strand.scream;
 
 import java.util.ArrayList;
 

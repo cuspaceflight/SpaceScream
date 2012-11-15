@@ -1,4 +1,4 @@
-package com.strand.spacescream;
+package com.strand.scream;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,6 +9,7 @@ import com.strand.global.StrandLog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.v4.view.ViewPager.LayoutParams;
 import android.widget.ImageView;
 
 /**
@@ -72,6 +73,26 @@ public class DisplayImages extends ScreamActivity implements ScreamActivity.Scre
             if (path != null) {
                 StrandLog.d(ScreamService.TAG, "Loading " + path);
                 Bitmap bitmap = BitmapFactory.decodeFile(path);
+                
+                // Scale up images smaller than screen size like this, so that
+                // image can then be aligned right in case of full screen display.
+                // Will result in pixelisation, but VGA camera is low quality...
+                if (imageView.getLayoutParams().height == LayoutParams.MATCH_PARENT
+                        && bitmap.getWidth() < 800 && bitmap.getHeight() < 480) {
+                    int width = bitmap.getWidth();
+                    int height = bitmap.getHeight();
+                    int h, w;
+                    double ratio = width * 1.0 / height;
+                    if (ratio < 800.0/480) {
+                        h = 480;
+                        w = (int) Math.round(ratio * h);
+                    } else {
+                        w = 800;
+                        h = (int) Math.round(w / ratio);
+                    }
+                    bitmap = Bitmap.createScaledBitmap(bitmap, w, h, false);
+                }
+                
                 imageView.setImageBitmap(bitmap);
                 File image = new File(path);
                 record = new File(FileManager.DIRECTORY + "/screenshots/" + DIR + "/" + image.getName() + ".txt");

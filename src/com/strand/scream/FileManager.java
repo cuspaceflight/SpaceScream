@@ -1,4 +1,4 @@
-package com.strand.spacescream;
+package com.strand.scream;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
