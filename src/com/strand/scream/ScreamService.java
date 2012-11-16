@@ -32,6 +32,7 @@ public class ScreamService extends Service {
     private Handler handler;
     private Runnable runNext;
     
+    private int activities = Integer.MAX_VALUE;
     private int stage;
     private boolean ending = false;
     private boolean screenshot = false;
@@ -64,31 +65,46 @@ public class ScreamService extends Service {
             @Override
             public void run() {
                 
-                switch (++stage) {
-                
-                case 1:
-                    launchActivity(Intro.class, null);
-                    break;
-                
-                case 2:
-                    launchActivity(PlayVideos.class, null);
-                    break;
+                // Is the activity we are about to launch disabled? (default is false!)
+                if (((1 << stage) & activities) == 0) {
                     
-                case 3:
-                    launchActivity(DisplayImages.class, null);
-                    break;
+                    stage++;
+                    if (stage < 6) {
+                        StrandLog.d(ScreamService.TAG, "Skipping stage " + stage + ", advancing to next");
+                        handler.post(this);
+                    } else {
+                        StrandLog.d(ScreamService.TAG, "Activity looping disabled; the work of ScreamService is done!");
+                    }
                     
-                case 4:
-                    launchActivity(DisplayWindowImages.class, null);
-                    break;
+                } else {
                     
-                case 5:
-                    launchActivity(Outro.class, null);
-                    break;
+                    switch (++stage) {
                     
-                default:
-                    stage = 0;
-                    handler.post(this);
+                    case 1:
+                        launchActivity(Intro.class, null);
+                        break;
+                    
+                    case 2:
+                        launchActivity(PlayVideos.class, null);
+                        break;
+                        
+                    case 3:
+                        launchActivity(DisplayImages.class, null);
+                        break;
+                        
+                    case 4:
+                        launchActivity(DisplayWindowImages.class, null);
+                        break;
+                        
+                    case 5:
+                        launchActivity(Outro.class, null);
+                        break;
+                        
+                    default:
+                        stage = 0;
+                        handler.post(this);
+                        
+                    }
                     
                 }
 
@@ -120,11 +136,15 @@ public class ScreamService extends Service {
             
             Uri uri = Uri.parse(params);
             
-            if (screamActivity == null && "false".equals(uri.getQueryParameter("run"))) {
-                // If we have run=false, then we stop main app schedule from running
-                // eg. "?action=delete&run=false"
-                StrandLog.d(ScreamService.TAG, "Stopping main activity schedule");
-                handler.removeCallbacks(runNext);
+            String run = uri.getQueryParameter("run");
+            
+            if (run != null) {
+                try {
+                    activities = Integer.parseInt(run);
+                } catch (NumberFormatException e) {
+                    StrandLog.e(TAG, "NumberFormatException in parsing run parameter!");
+                    activities = Integer.MAX_VALUE;
+                }
             }
             
             String action = uri.getQueryParameter("action");
@@ -182,9 +202,8 @@ public class ScreamService extends Service {
                     }
                 }
                 
-            } else {
-                // Not necessarily an error - by default we're passed PARAM_LIST = "1" it seems
-                StrandLog.d(ScreamService.TAG, "Action not recognised: " + action);
+            } else if (action != null) {
+                StrandLog.e(ScreamService.TAG, "Action not recognised: " + action);
             }
             
         }
