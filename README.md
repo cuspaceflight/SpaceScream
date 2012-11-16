@@ -57,8 +57,9 @@ The `run` parameter allows you to explicitly specify which of the activities abo
     (3) DisplayImages = 4
     (4) DisplayWindowImages = 8
     (5) Outro = 16
+    (6) Repeat = 32
 
-For example, `?run=14` corresponds to just the three main activities being run (2 + 4 + 8 = 14). `?run=0` could be of practical use in combination with an `action` parameter (below). By default, all activities will run.
+For example, `?run=14` corresponds to just the three main activities being run (2 + 4 + 8 = 14). The last step corresponding to 32 simply allows the activity schedule to loop. `?run=0` could be of practical use in combination with an `action` parameter (below). By default, all activities will run, and loop indefinitely.
 
 The following values of the `action` parameter are implemented:
 
@@ -82,6 +83,6 @@ This command starts an Activity which isn't part of the main app schedule, which
 
 ### file ###
 
-Example usage: `action=file&path=/sdcard/strand/scream/photos/1353005904.jpg`
+Example usage: `?action=file&path=/sdcard/strand/scream/photos/1353005904.jpg`
 
 This is used to request the transfer of the file matched by the `path` parameter. An example use case would be to downlink the full resolution version of a thumbnail that was previously transferred.
