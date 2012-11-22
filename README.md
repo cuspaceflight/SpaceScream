@@ -27,23 +27,25 @@ Here we describe the standard operation of the app when it is started by the [MC
 
 ### Intro ###
 
-Plays soundtrack.mp3, generates and plays some radioteletype tones, and then displays logos on screen with camera preview in background (screenshots are requested of each logo).
+Plays soundtrack.mp3, generates and plays some radioteletype tones, and then displays logos on screen with camera preview in background (screenshots are requested of each logo). Only on first cycle.
 
 ### PlayVideos ###
 
-Plays each video found in the videos directory, and records audio from microphone into audio directory (which will be created if it doesn't exist) for each. On completion of recording, a file transfer will be requested. A recording will only be made if one doesn't exist already for that video.
+Plays each video found in the videos directory*, and records audio from microphone into audio directory (which will be created if it doesn't exist) for each. On completion of recording, a file transfer will be requested. A recording will only be made if one doesn't exist already for that video.
 
 ### DisplayImages ###
 
-Displays still frame from each video in full screen (camera preview in background for area of screen not filled by image), and requests a screenshot if one hasn't been taken before.
+Displays still frame from each video* in full screen (camera preview in background for area of screen not filled by image), and requests a screenshot if one hasn't been taken before.
 
 ### DisplayWindowImages ###
 
-Displays still frame from each video in corner of screen, in front of camera preview. Requests screenshot for each (as before, only if one hasn't been taken before), and also takes a photo from phone camera, saving both full resolution version, and a thumbnail. The thumbnail is scheduled for file transfer.
+Displays still frame from each video* in corner of screen, in front of camera preview. Requests screenshot for each (as before, only if one hasn't been taken before), and also takes a photo from phone camera, saving both full resolution version, and a thumbnail. The thumbnail is scheduled for file transfer.
 
 ### Outro ###
 
-Plays earth.mp3 (composition by school children), and shows CUSF logo on screen on top of camera preview.
+Plays earth.mp3 (composition by school children), and shows CUSF logo on screen on top of camera preview. Only on first cycle.
+
+\* For the first cycle each time the app is run, only the videos/stills which haven't already been recorded, or had a screenshot taken in the particular configuration, are displayed. When the cycle repeats, all videos/stills are used, since the main objective has been achieved. This means that if the app is started and all recordings/screenshots are present, then nothing will be displayed for the first cycle (aside from the Intro, followed by Outro).
 
 Parameters
 ----------
