@@ -3,6 +3,7 @@ package com.strand.scream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import com.strand.global.StrandLog;
 
@@ -30,7 +31,6 @@ public class DisplayImages extends ScreamActivity implements ScreamActivity.Scre
     
     protected long delay = 10000;
     
-    protected String DIR = "DisplayImages";
     private File record;
     
     protected Runnable runnable;
@@ -42,7 +42,7 @@ public class DisplayImages extends ScreamActivity implements ScreamActivity.Scre
         setContentView();
         
         imageView = (ImageView) findViewById(R.id.imageView);
-        images = FileManager.getFiles("images");
+        images = getImages();
         
         runnable = new Runnable() {
 
@@ -94,13 +94,13 @@ public class DisplayImages extends ScreamActivity implements ScreamActivity.Scre
                 }
                 
                 imageView.setImageBitmap(bitmap);
-                File image = new File(path);
-                record = new File(FileManager.DIRECTORY + "/screenshots/" + DIR + "/" + image.getName() + ".txt");
+                
+                record = getRecordFile(path);
                 if (!record.exists()) {
                     ScreamService.getInstance().requestScreenshot();
-                    StrandLog.d(ScreamService.TAG, "Requesting screenshot for " + image.getName());
+                    StrandLog.d(ScreamService.TAG, "Requesting screenshot for " + path);
                 } else {
-                    StrandLog.d(ScreamService.TAG, "Screenshot previously requested for " + image.getName());
+                    StrandLog.d(ScreamService.TAG, "Screenshot previously requested for " + path);
                     postDelayed(runnable, delay);
                 }
             } else {
@@ -110,6 +110,29 @@ public class DisplayImages extends ScreamActivity implements ScreamActivity.Scre
             StrandLog.d(ScreamService.TAG, "No more images left in queue; ending activity");            
             finish();
         }
+    }
+    
+    protected ArrayList<String> getImages() {
+        ArrayList<String> images = FileManager.getFiles("images");
+        
+        if (!ScreamService.repeat) {
+            // Remove images which have already had screenshots taken
+            // On repeat cycle, we'll show everything for fun!
+            Iterator<String> i = images.iterator();
+            while (i.hasNext()) {
+               String path = i.next();
+               if (getRecordFile(path).exists()) {
+                   i.remove();
+               }
+            }
+        }
+        
+        return images;
+    }
+    
+    private File getRecordFile(String path) {
+        File image = new File(path);
+        return new File(FileManager.DIRECTORY + "/screenshots/" + getClass().getSimpleName() + "/" + image.getName() + ".txt");
     }
     
     @Override

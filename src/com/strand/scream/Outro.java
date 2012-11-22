@@ -12,8 +12,9 @@ import android.os.Bundle;
 import android.widget.ImageView;
 
 /**
- * Simply plays MP3 created by primary school children at Our Dynamic Earth
- * science museum.
+ * Plays MP3 of composition by primary school children at Our Dynamic Earth
+ * science museum, then a generative piece of music, and a choral composition
+ * by composer Ed Rex ('On That Pale Blue Dot').
  * 
  * SD: Looks for /intro/01-cusf.png and /dynamicearth/earth.mp3
  * 

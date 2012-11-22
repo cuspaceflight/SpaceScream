@@ -1,6 +1,7 @@
 package com.strand.scream;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -28,10 +29,8 @@ public class Intro extends DisplayImages {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        DIR = "Intro";
+
         delay = 20000;
-        
-        images = FileManager.getFiles("intro");
         
         imageRunnable = runnable;
         runnable = new Runnable() {
@@ -67,6 +66,11 @@ public class Intro extends DisplayImages {
             }
             
         };
+    }
+    
+    @Override
+    protected ArrayList<String> getImages() {
+        return FileManager.getFiles("intro");
     }
     
     private void showLogos() {

@@ -22,7 +22,6 @@ public class DisplayWindowImages extends DisplayImages {
         
         preview = (Preview) findViewById(R.id.surfaceView);
         
-        DIR = "DisplayWindowImages";
     }
     
     @Override

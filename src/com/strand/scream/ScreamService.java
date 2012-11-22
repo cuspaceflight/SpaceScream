@@ -26,6 +26,7 @@ public class ScreamService extends Service {
     public final static String TAG = "SpaceScream";
     
     private static ScreamService instance;
+    public static boolean repeat;
     
     private ScreamActivity screamActivity;
     
@@ -34,6 +35,7 @@ public class ScreamService extends Service {
     
     private int activities = Integer.MAX_VALUE;
     private int stage;
+    
     private boolean ending = false;
     private boolean screenshot = false;
     
@@ -50,6 +52,7 @@ public class ScreamService extends Service {
     public void onCreate() {
         super.onCreate();
         
+        repeat = false;
         instance = this;
         StrandLog.d(TAG, "Scream in Space has started!");
         
@@ -81,7 +84,11 @@ public class ScreamService extends Service {
                     switch (++stage) {
                     
                     case 1:
-                        launchActivity(Intro.class, null);
+                        if (!repeat) {
+                            launchActivity(Intro.class, null);
+                        } else {
+                            handler.post(this);
+                        }
                         break;
                     
                     case 2:
@@ -97,11 +104,16 @@ public class ScreamService extends Service {
                         break;
                         
                     case 5:
-                        launchActivity(Outro.class, null);
+                        if (!repeat) {
+                            launchActivity(Outro.class, null);
+                        } else {
+                            handler.post(this);
+                        }
                         break;
                         
                     default:
                         stage = 0;
+                        repeat = true;
                         handler.post(this);
                         
                     }

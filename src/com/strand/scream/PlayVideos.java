@@ -3,6 +3,7 @@ package com.strand.scream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import com.strand.global.StrandLog;
 
@@ -34,7 +35,7 @@ public class PlayVideos extends ScreamActivity {
     private OnErrorListener errorListener;
     
     private MediaRecorder mediaRecorder;
-    private String audioPath;
+    private File audio;
     private boolean recording = false;
     
     private Runnable runnable;
@@ -92,6 +93,19 @@ public class PlayVideos extends ScreamActivity {
         videoView.setOnErrorListener(errorListener);
         
         videos = FileManager.getFiles("videos");
+        
+        if (!ScreamService.repeat) {
+            // Remove videos which already have recordings
+            // On a repeat cycle, we'll play videos for fun!
+            Iterator<String> i = videos.iterator();
+            while (i.hasNext()) {
+               String path = i.next();
+               if (getAudioFile(path).exists()) {
+                   i.remove();
+               }
+            }
+        }
+        
     }
     
     @Override
@@ -116,10 +130,10 @@ public class PlayVideos extends ScreamActivity {
             String path = videos.get(index++);
             if (path != null) {
                 StrandLog.d(ScreamService.TAG, "Loading " + path);
-                File video = new File(path);
-                audioPath = FileManager.DIRECTORY + "/audio/" + video.getName() + ".3gp";
+                audio = getAudioFile(path);
                 videoView.setVideoPath(path);
             } else {
+                StrandLog.e(ScreamService.TAG, "Video path is null; loading next");
                 loadVideo();
             }
         } else {
@@ -128,19 +142,22 @@ public class PlayVideos extends ScreamActivity {
         }
     }
     
+    private File getAudioFile(String path) {
+        File video = new File(path);
+        return new File(FileManager.DIRECTORY + "/audio/" + video.getName() + ".3gp");
+    }
+    
     private void startRecording() {
-        
-        File audio = new File(audioPath);
         
         if (!audio.exists()) {
             
             audio.getParentFile().mkdirs();
             
-            StrandLog.d(ScreamService.TAG, "Starting audio recording to " + audioPath);
+            StrandLog.d(ScreamService.TAG, "Starting audio recording to " + audio.getPath());
             mediaRecorder = new MediaRecorder();
             mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
             mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-            mediaRecorder.setOutputFile(audioPath);
+            mediaRecorder.setOutputFile(audio.getAbsolutePath());
             mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
             
             try {
@@ -154,7 +171,7 @@ public class PlayVideos extends ScreamActivity {
             }
             
         } else {
-            StrandLog.d(ScreamService.TAG, "Recording of video already exists: " + audioPath);
+            StrandLog.d(ScreamService.TAG, "Recording of video already exists: " + audio.getPath());
         }
 
     }
@@ -172,9 +189,9 @@ public class PlayVideos extends ScreamActivity {
                     
                     if (interrupted) {
                         // Delete incomplete recording from SD card
-                        (new File(audioPath)).delete();
+                        audio.delete();
                     } else {
-                        FileManager.getInstance().add(audioPath);
+                        FileManager.getInstance().add(audio.getAbsolutePath());
                     }
                     
                 } catch (IllegalStateException e) {
